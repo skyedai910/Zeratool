@@ -71,6 +71,11 @@ python zeratool.py challenges/hard_format #This one sometimes needs to be run tw
 python zeratool.py challenges/demo_bin
 ```
 
+## Run the tests!
+Tox and Pytest are used to verify that Zeratool is working correctly.
+
+    tox .
+
 ## FAQ
 Q. Why doesn't Zeratool work against my simple exploitable?
 
