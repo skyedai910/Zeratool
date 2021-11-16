@@ -19,7 +19,7 @@ from zeratool import formatExploiter
 logging.getLogger().disabled = True
 
 def is_radare_installed():
-    return which("r2") is not None
+    return which("r2") != None
 
 def main():
 
@@ -73,7 +73,7 @@ def main():
         print("[+] Checking for flag leak")
         properties["pwn"] = formatLeak.checkLeak(args.file, properties)
         # Launch leak remotely
-        if properties["pwn"]["flag_found"] and args.url is not "":
+        if properties["pwn"]["flag_found"] and args.url != "":
             print("[+] Found flag through leaks locally. Launching remote exploit")
             print("[+] Connecting to {}:{}".format(args.url, args.port))
             properties["pwn"]["exploit"] = formatLeak.checkLeak(
@@ -99,7 +99,7 @@ def main():
             properties["send_results"] = overflowExploitSender.sendExploit(
                 args.file, properties
             )
-            if properties["send_results"]["flag_found"] and args.url is not "":
+            if properties["send_results"]["flag_found"] and args.url != "":
                 properties["remote_results"] = overflowExploitSender.sendExploit(
                     args.file,
                     properties,
@@ -113,10 +113,10 @@ def main():
             args.file, properties
         )
         if (
-            properties["pwn_type"] is not None
+            properties["pwn_type"] != None
             and "flag_found" in properties["pwn_type"].keys()
             and properties["pwn_type"]["results"]["flag_found"]
-            and args.url is not ""
+            and args.url != ""
         ):
             properties["pwn_type"]["send_results"] = formatExploiter.getRemoteFormat(
                 properties, remote_url=args.url, remote_port=int(args.port)
