@@ -9,21 +9,21 @@ def checkFormat(binary_name, inputType="STDIN"):
 
     p = angr.Project(binary_name, load_options={"auto_load_libs": False})
 
-    # Stdio based ones
+    # Stdio based ones(变参)
     p.hook_symbol("printf", printf_model.printFormat(0))
     p.hook_symbol("fprintf", printf_model.printFormat(1))
     p.hook_symbol("dprintf", printf_model.printFormat(1))
     p.hook_symbol("sprintf", printf_model.printFormat(1))
     p.hook_symbol("snprintf", printf_model.printFormat(2))
 
-    # Stdarg base ones
+    # Stdarg base ones(定参)
     p.hook_symbol("vprintf", printf_model.printFormat(0))
     p.hook_symbol("vfprintf", printf_model.printFormat(1))
     p.hook_symbol("vdprintf", printf_model.printFormat(1))
     p.hook_symbol("vsprintf", printf_model.printFormat(1))
     p.hook_symbol("vsnprintf", printf_model.printFormat(2))
 
-    # Setup state based on input type
+    # Setup state based on input type 
     argv = [binary_name]
     input_arg = claripy.BVS("input", 300 * 8)
     if inputType == "STDIN":

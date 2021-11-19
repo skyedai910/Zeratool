@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#/usr/bin/python3
+# 适配Python2括号问题
 from __future__ import print_function
+# 校验radare2是否安装
 from shutil import which
 import argparse
 import logging
@@ -18,46 +20,58 @@ from zeratool import formatExploiter
 
 logging.getLogger().disabled = True
 
+# 校验radare2是否安装
 def is_radare_installed():
     return which("r2") != None
 
 def main():
-
+    # 校验radare2是否安装
     if not is_radare_installed():
         print("[-] Error radare2 is not installed.")
         exit(1)
 
+    # 创建命令行参数解析器
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="File to analyze")
     parser.add_argument("-l", "--libc", help="libc to use")
     parser.add_argument("-u", "--url", help="Remote URL to pwn", default="")
     parser.add_argument("-p", "--port", help="Remote port to pwn", default="0")
+    # 详细模式：默认开启，有值时action记录为False
     parser.add_argument(
-        "-v", "--verbose", help="Verbose mode", action="store_true", default=False
+        "-v", "--verbose", help="Close verbose mode", action="store_false", default=True
     )
 
     args = parser.parse_args()
+    # 未找到对应文件
     if args.file is None:
         print("[-] Exitting no file specified")
         exit(1)
+    # 关闭详细模式
     if args.verbose:
+        # 关闭CRITICAL级别以下的日志
         logging.disable(logging.CRITICAL)
 
     # For stack problems where env gets shifted
     # based on path, using the abs path everywhere
     # makes it consistent
+    # 获取文件绝对路径
     args.file = os.path.abspath(args.file)
 
     # Detect problem type
+    # 程序属性存储字典
     properties = {}
+    # 程序数据输入方式
     properties["input_type"] = inputDetector.checkInputType(args.file)
+    # 程序动态链接库
     properties["libc"] = args.libc
     properties["file"] = args.file
     print("[+] Checking pwn type...")
     print("[+] Checking for overflow pwn type...")
+    # 检查是否存在栈溢出
     properties["pwn_type"] = overflowDetector.checkOverflow(
         args.file, inputType=properties["input_type"]
     )
+    # 检查是否存在格式化字符串
     if properties["pwn_type"]["type"] is None:
         print("[+] Checking for format string pwn type...")
         properties["pwn_type"] = formatDetector.checkFormat(
@@ -65,6 +79,7 @@ def main():
         )
 
     # Get problem mitigations
+    # 获取程序保护机制
     print("[+] Getting binary protections")
     properties["protections"] = protectionDetector.getProperties(args.file)
 
