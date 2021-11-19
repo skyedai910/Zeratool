@@ -38,7 +38,7 @@ def main():
     parser.add_argument("-p", "--port", help="Remote port to pwn", default="0")
     # 详细模式：默认开启，有值时action记录为False
     parser.add_argument(
-        "-v", "--verbose", help="Close verbose mode", action="store_false", default=True
+        "-v", "--verbose", help="Close verbose mode", action="store_true", default=False
     )
 
     args = parser.parse_args()
