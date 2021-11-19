@@ -1,4 +1,4 @@
-#/usr/bin/python3
+#!/usr/bin/env python3
 # 适配Python2括号问题
 from __future__ import print_function
 # 校验radare2是否安装
