@@ -3,6 +3,7 @@ from .radare_helper import findShellcode
 from pwn import *
 import timeout_decorator
 
+# 是否设置fuzz字符需要是可见字符
 is_printable = False
 
 
@@ -78,8 +79,9 @@ def check_continuity(address, addresses, length):
     return True
 
 
+# 判断是否栈溢出函数，用于决断是否放弃模拟状态
 def overflow_detect_filter(simgr):
-
+    # 提取unconstrained状态
     for state in simgr.unconstrained:
         bits = state.arch.bits
         num_count = bits / 8
@@ -87,12 +89,14 @@ def overflow_detect_filter(simgr):
 
         # Check satisfiability
         if state.solver.satisfiable(extra_constraints=[state.regs.pc == pc_value]):
-
+            
+            # 添加约束:pc寄存器需要为pc_value
             state.add_constraints(state.regs.pc == pc_value)
             user_input = state.globals["user_input"]
 
             print("Found vulnerable state.")
 
+            # 是否设置fuzz字符需要是可见字符
             if is_printable:
                 print("Constraining input to be printable")
                 for c in user_input.chop(8):
@@ -101,6 +105,7 @@ def overflow_detect_filter(simgr):
                         state.add_constraints(constraint)
 
             # Get input values
+            # 基于当前约束进行求解
             input_bytes = state.solver.eval(user_input, cast_to=bytes)
             print("[+] Vulnerable path found {}".format(input_bytes))
             state.globals["type"] = "Overflow"

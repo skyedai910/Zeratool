@@ -11,8 +11,8 @@ def checkInputType(binary_name):
     # Check for libpwnableharness
     # 导入程序
     p = angr.Project(binary_name)
-    # 从ELF文件中加载的所有对象(elf,libc,ld)绝对路径；
     # any判断是否全为空
+    # 从ELF文件中加载的所有对象(elf,libc,ld)绝对路径，检查是否调用了libpwnable这个库文件
     if any(["libpwnable" in str(x.binary) for x in p.loader.all_elf_objects]):
         return libpwnable
 

@@ -46,8 +46,9 @@ def checkOverflow(binary_name, inputType="STDIN"):
         # INFO https://github.com/angr/angr-doc/blob/9f803b24598bea3a0f9cc9c728e1465291b5259d/docs/simprocedures.md#global-variables
         state.globals["user_input"] = input_arg
     elif inputType == "LIBPWNABLE":
-        # FIXME 如果不存在handle_connection，那么读取rebased_addr
-        # handle_connection:socket网络连接相关函数
+        # FIXME 如果不存在handle_connection，那么怎样读取rebased_addr
+        # ~handle_connection:socket网络连接相关函数~
+        # TODO 这里handle_connection实际上是LIBPWNABLE库中的函数？
         handle_connection = p.loader.main_object.get_symbol("handle_connection")
         # entry_state:构造从binary入口开始的状态(从main函数开始运行)
         # handle_connection.rebased_addr:实际上获取text起始地址
@@ -74,7 +75,9 @@ def checkOverflow(binary_name, inputType="STDIN"):
         # 函数超时处理
         @timeout_decorator.timeout(120)
         def exploreBinary(simgr):
-            # TODO 
+            # find:目标是globals出现type属性，也就是找到漏洞
+            # step_func:如果不为空，则在每次模拟结束时调用，step_func的返回值决定是否丢弃状态
+            # Memory Managment on big searches (Auto Drop Stashes)
             simgr.explore(
                 find=lambda s: "type" in s.globals, step_func=overflow_detect_filter
             )
