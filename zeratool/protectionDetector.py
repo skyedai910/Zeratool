@@ -14,4 +14,8 @@ def getProperties(binary_name):
     properties["plt"] = binary.plt
     properties["relro"] = binary.relro
 
+    print("[+] binary protective:")
+    for key,value in properties.items():
+        print("[+] {:8}:\t{}".format(key,value))
+
     return properties

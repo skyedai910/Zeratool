@@ -1,3 +1,4 @@
+from time import sleep
 import claripy
 from .radare_helper import findShellcode
 from pwn import *
@@ -116,17 +117,21 @@ def overflow_detect_filter(simgr):
 
     return simgr
 
-
+# BUG:64位调用system内存没有对齐情况
 def point_to_win_filter(simgr):
-
+    if len(simgr.unconstrained) == None:
+        print("[!] no found unconstrained state, trying other path...")
+        return simgr
     for state in simgr.unconstrained:
         properties = state.globals["properties"]
-
         for func in properties["win_functions"]:
-            address = properties["win_functions"][func]["fcn_addr"]
-
-            print("Trying {}".format(hex(address)))
-
+            # pie下win_functions默认记录是偏移地址，需要加上基地址处理一下
+            if properties["protections"]["pie"]:
+                print("[+]program pie is on, need redict base_addr")
+                address = properties["win_functions"][func]["fcn_addr"]+properties['base_addr']
+            else:
+                address = properties["win_functions"][func]["fcn_addr"]   
+            print("[-] Trying win_function: {}".format(hex(address)))
             # Check satisfiability
             if state.solver.satisfiable(extra_constraints=[state.regs.pc == address]):
                 state.add_constraints(state.regs.pc == address)
@@ -147,7 +152,8 @@ def point_to_win_filter(simgr):
                 simgr.stashes["found"].append(state)
                 simgr.stashes["unconstrained"].remove(state)
             return simgr
-
+    else:
+        print("[!] no found exploit unconstrained state")
     return simgr
 
 

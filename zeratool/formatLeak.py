@@ -21,8 +21,6 @@ def checkLeak(
 
     if properties["input_type"] == "STDIN" or properties["input_type"] == "LIBPWNABLE":
         for i in range(int(run_count / format_count) + 1):
-
-            # Create local or remote process
             if remote_server:
                 proc = remote(remote_url, port_num)
             else:
@@ -37,6 +35,7 @@ def checkLeak(
                 input_string = input_string.replace(
                     b"_%" + format_specifier, b"_%" + iter_byte + b"$" + format_specifier, 1
                 )
+            input_string = input_string.replace(b'%'+format_specifier+b'_',b'')
 
             print("[+] Sending input {}".format(input_string))
             proc.sendline(input_string)
@@ -49,6 +48,7 @@ def checkLeak(
             3. flip bytes for endianess
             4. hex to ascii converstion
             """
+            print(results)
             data_leaks = results.split(b"_")
             # data_leaks = [
             #     x[0:8] if all([y in string.hexdigits.encode() for y in x]) else b""
@@ -61,7 +61,13 @@ def checkLeak(
             ]
             try:
                 data_copy = data_leaks
-                data_leaks = [binascii.unhexlify(x.decode()) for x in data_leaks]
+                tem_list = []
+                for x in data_leaks:
+                    try:
+                        tem_list.append(binascii.unhexlify(x.decode()))
+                    except UnicodeDecodeError:
+                        continue
+                data_leaks = tem_list
             except binascii.Error:
                 print("[~] Odd length string detected... Skipping")
                 temp_data = []

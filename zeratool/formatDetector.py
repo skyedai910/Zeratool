@@ -47,9 +47,10 @@ def checkFormat(binary_name, inputType="STDIN"):
     end_state = None
     # Lame way to do a timeout
     try:
-
+        # 函数超时处理
         @timeout_decorator.timeout(120)
         def exploreBinary(simgr):
+            # find:目标是globals出现type属性，也就是找到漏洞
             simgr.explore(find=lambda s: "type" in s.globals)
 
         exploreBinary(simgr)
@@ -61,9 +62,10 @@ def checkFormat(binary_name, inputType="STDIN"):
 
     except (KeyboardInterrupt, timeout_decorator.TimeoutError) as e:
         print("[~] Format check timed out")
-
-    if "input" in end_state.globals.keys():
-        run_environ["input"] = end_state.globals["input"]
-        print("[+] Triggerable with input : {}".format(end_state.globals["input"]))
+    if end_state:
+        # BUG没有处理fuzz没有异常状态时，end_state为空根本没定义
+        if "input" in end_state.globals.keys():
+            run_environ["input"] = end_state.globals["input"]
+            print("[+] Triggerable with input : {}".format(end_state.globals["input"]))
 
     return run_environ

@@ -1,29 +1,90 @@
+import time
+from pwnlib.replacements import sleep
 import r2pipe
 import json
 import os
 
 
-def getRegValues(filename, endAddr=None):
-
-    r2 = r2pipe.open(filename,flags=["-d"])
-    #r2.cmd("doo")
-    if endAddr:
-        r2.cmd("dcu {}".format(endAddr))
-    else:
+# BUG 对于PIE程序，getbaseaddr获取的地址和这个r2 debug运行时是不一样的，所以获取的是假的reg值
+def getRegValues(filename, endAddr=None, pie=None):
+    # r2 = r2pipe.open(filename,flags=["-d"])
+    for i in range(10):
+        print("[-] try to find entry_addr for {} times".format(i+1))
+        entry_addr = None
+        r2 = r2pipe.open(filename,flags=["-d"])
         r2.cmd("e dbg.bep=entry")
-        entry_addr = json.loads(r2.cmd("iej"))[0]["vaddr"] 
-        r2.cmd("dcu {}".format(entry_addr))
-    regs = json.loads(r2.cmd("drj"))
+        try:
+            tmp_data = json.loads(r2.cmd("iej"))
+            if "vaddr" in tmp_data[0]:
+                entry_addr = tmp_data[0]["vaddr"]
+                base_addr = entry_addr - tmp_data[0]["paddr"]
+                r2.cmd("dcu {}".format(entry_addr))
+                break
+            else:
+                print("[!] radare2 return json [iej] data[0] has not \"vaddr\", trying again")
+                r2.quit()
+                time.sleep(0.5)
+                continue
+        except json.decoder.JSONDecodeError:
+            print("[!] radare2 return json [iej] data is empty, trying again")
+            r2.quit()
+            time.sleep(0.5)
+            continue
+    else:
+        print("[!] radare2 rerun multiple times, but can't get data, exitting...")
+        exit(-1)
+
+    regs = None
+    for _ in range(10):
+        if not regs:
+            try:
+                regs = json.loads(r2.cmd("drj"))
+                print("[+] redare2 drj:",regs)
+                break
+            except json.decoder.JSONDecodeError:
+                print("[!] radare2 return json [drj] data is empty, trying again")
+                regs = None
+                time.sleep(0.5)
+    else:
+        print("[!] radare2 rerun multiple times, but can't get data, exitting...")
+        exit(-1)
     r2.quit()
-    return regs
+    if not pie:
+        return regs
+    else:
+        return base_addr,regs
 
 
 def get_base_addr(filename):
-
-    r2 = r2pipe.open(filename)
-    r2.cmd("doo")
-    base_addr = json.loads(r2.cmd("iMj"))["vaddr"]
-    r2.quit()
+    for _ in range(10):
+        r2 = r2pipe.open(filename)
+        r2.cmd("doo")   # 这里用doo目的是开启debug模式读取地址信息，普通分析模式是偏移地址（PIE）
+        iMj_data = None
+        if not iMj_data:
+            try:
+                iMj_data = json.loads(r2.cmd("iMj"))
+                if "vaddr" not in iMj_data and "paddr" not in iMj_data:
+                    print("[!] radare2 [iMj] retrun data has no vaddr info, try again")
+                    r2.quit()
+                    continue
+                else:
+                    print("[+] redare2 iMj:",iMj_data)
+                    break
+            except json.decoder.JSONDecodeError:
+                    print("[!] radare2 return json [iMj] data is empty, trying again")
+                    r2.quit()
+                    time.sleep(0.5)
+                    continue
+            except TypeError:
+                    print("[!] radare2 return json [iMj] data is int, trying again")
+                    r2.quit()
+                    time.sleep(0.5)
+                    continue
+    else:
+        print("[!] radare2 rerun multiple times, but can't get data, exitting...")
+        exit(-1)
+    base_addr = iMj_data["vaddr"]-iMj_data['paddr']
+    print("[+] base_addr:",hex(base_addr))
     return base_addr
 
 

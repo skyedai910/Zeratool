@@ -1,0 +1,72 @@
+action: GLOB, msg: packaging
+cwd: /root/Zeratool
+cmd: /usr/bin/python3 setup.py sdist --formats=zip --dist-dir .tox/dist
+running sdist
+running egg_info
+writing zeratool.egg-info/PKG-INFO
+writing dependency_links to zeratool.egg-info/dependency_links.txt
+writing requirements to zeratool.egg-info/requires.txt
+writing top-level names to zeratool.egg-info/top_level.txt
+reading manifest file 'zeratool.egg-info/SOURCES.txt'
+writing manifest file 'zeratool.egg-info/SOURCES.txt'
+running check
+/usr/lib/python3.8/distutils/dist.py:274: UserWarning: Unknown distribution option: 'install_package_data'
+  warnings.warn(msg)
+warning: check: missing meta-data: if 'author' supplied, 'author_email' must be supplied too
+
+creating zeratool-2.0
+creating zeratool-2.0/bin
+creating zeratool-2.0/zeratool
+creating zeratool-2.0/zeratool.egg-info
+copying files to zeratool-2.0...
+copying README.md -> zeratool-2.0
+copying setup.py -> zeratool-2.0
+copying bin/zerapwn.py -> zeratool-2.0/bin
+copying zeratool/__init__.py -> zeratool-2.0/zeratool
+copying zeratool/formatDetector.py -> zeratool-2.0/zeratool
+copying zeratool/formatExploiter.py -> zeratool-2.0/zeratool
+copying zeratool/formatLeak.py -> zeratool-2.0/zeratool
+copying zeratool/inputDetector.py -> zeratool-2.0/zeratool
+copying zeratool/overflowDetector.py -> zeratool-2.0/zeratool
+copying zeratool/overflowExploitSender.py -> zeratool-2.0/zeratool
+copying zeratool/overflowExploiter.py -> zeratool-2.0/zeratool
+copying zeratool/printf_model.py -> zeratool-2.0/zeratool
+copying zeratool/protectionDetector.py -> zeratool-2.0/zeratool
+copying zeratool/radare_helper.py -> zeratool-2.0/zeratool
+copying zeratool/simgr_helper.py -> zeratool-2.0/zeratool
+copying zeratool/winFunctionDetector.py -> zeratool-2.0/zeratool
+copying zeratool.egg-info/PKG-INFO -> zeratool-2.0/zeratool.egg-info
+copying zeratool.egg-info/SOURCES.txt -> zeratool-2.0/zeratool.egg-info
+copying zeratool.egg-info/dependency_links.txt -> zeratool-2.0/zeratool.egg-info
+copying zeratool.egg-info/requires.txt -> zeratool-2.0/zeratool.egg-info
+copying zeratool.egg-info/top_level.txt -> zeratool-2.0/zeratool.egg-info
+Writing zeratool-2.0/setup.cfg
+creating '.tox/dist/zeratool-2.0.zip' and adding 'zeratool-2.0' to it
+adding 'zeratool-2.0'
+adding 'zeratool-2.0/zeratool.egg-info'
+adding 'zeratool-2.0/zeratool'
+adding 'zeratool-2.0/bin'
+adding 'zeratool-2.0/setup.cfg'
+adding 'zeratool-2.0/README.md'
+adding 'zeratool-2.0/PKG-INFO'
+adding 'zeratool-2.0/setup.py'
+adding 'zeratool-2.0/zeratool.egg-info/dependency_links.txt'
+adding 'zeratool-2.0/zeratool.egg-info/SOURCES.txt'
+adding 'zeratool-2.0/zeratool.egg-info/requires.txt'
+adding 'zeratool-2.0/zeratool.egg-info/PKG-INFO'
+adding 'zeratool-2.0/zeratool.egg-info/top_level.txt'
+adding 'zeratool-2.0/zeratool/printf_model.py'
+adding 'zeratool-2.0/zeratool/formatDetector.py'
+adding 'zeratool-2.0/zeratool/overflowExploitSender.py'
+adding 'zeratool-2.0/zeratool/simgr_helper.py'
+adding 'zeratool-2.0/zeratool/formatExploiter.py'
+adding 'zeratool-2.0/zeratool/formatLeak.py'
+adding 'zeratool-2.0/zeratool/radare_helper.py'
+adding 'zeratool-2.0/zeratool/__init__.py'
+adding 'zeratool-2.0/zeratool/overflowExploiter.py'
+adding 'zeratool-2.0/zeratool/overflowDetector.py'
+adding 'zeratool-2.0/zeratool/inputDetector.py'
+adding 'zeratool-2.0/zeratool/protectionDetector.py'
+adding 'zeratool-2.0/zeratool/winFunctionDetector.py'
+adding 'zeratool-2.0/bin/zerapwn.py'
+removing 'zeratool-2.0' (and everything under it)

@@ -89,9 +89,10 @@ def checkOverflow(binary_name, inputType="STDIN"):
 
     except (KeyboardInterrupt, timeout_decorator.TimeoutError) as e:
         print("[~] Overflow check timed out")
-
-    if "input" in run_environ.keys():
-        run_environ["input"] = end_state.globals["input"]
-        print("[+] Triggerable with input : {}".format(end_state.globals["input"]))
+    if end_state:
+        # BUG没有处理fuzz没有异常状态时，end_state为空根本没定义
+        if "input" in end_state.globals.keys():
+            run_environ["input"] = end_state.globals["input"]
+            print("[+] Triggerable with input : {}".format(end_state.globals["input"]))
 
     return run_environ

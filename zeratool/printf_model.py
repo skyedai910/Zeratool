@@ -39,8 +39,7 @@ class printFormat(angr.procedures.libc.printf.printf):
         self.input_index=input_index
         angr.procedures.libc.printf.printf.__init__(self)
 
-    def checkExploitable(self):
-        
+    def checkExploitable(self): 
         # 获取程序对应架构字长
         bits = self.state.arch.bits
         load_len = int(bits / 8)
@@ -55,7 +54,7 @@ class printFormat(angr.procedures.libc.printf.printf):
         # angr程序状态
         state = self.state
         # 重命名约束求解方法函数
-        solv = state.solver.eval
+        # solv = state.solver.eval
 
         # 导入格式化字符串参数
         printf_arg = self.arg(i)
@@ -67,7 +66,7 @@ class printFormat(angr.procedures.libc.printf.printf):
             print("printf arg[{}] ptr is symbolic! HOW?".format(i))
 
         # 基于当前约束进行求解，var_loc是变量地址
-        var_loc = solv(printf_arg)
+        var_loc = state.solver.eval(printf_arg)
 
         # 测量符号数据长度
         # Parts of this argument could be symbolic, so we need
@@ -79,6 +78,7 @@ class printFormat(angr.procedures.libc.printf.printf):
         var_data = state.memory.load(var_loc, var_len)
 
         # 将符号(symbolic)数据读取出来
+        # symbolic_list记录是可以写入的bit位。True个数==可写入长度
         print("Building list of symbolic bytes")
         symbolic_list = [
             state.memory.load(var_loc + x,1).symbolic
@@ -97,17 +97,22 @@ class printFormat(angr.procedures.libc.printf.printf):
 
         寻找最后一个angr符号的位置
         """
+        # 查询可以写入的范围
         position = 0
         count = 0
         greatest_count = 0
-        prev_item = symbolic_list[0]
-        for i in range(1, len(symbolic_list)):
+        # prev_item = symbolic_list[0]
+        symbolic_num = 0
+        for symbolic in symbolic_list:
+            if symbolic:
+                symbolic_num += 1
+        for i in range(1, symbolic_num):
             # symbolic不为截断符且前后一致
             if symbolic_list[i] and symbolic_list[i] == symbolic_list[i - 1]:
                 count = count + 1
                 if count > greatest_count:
                     greatest_count = count
-                    position = i - count
+                    position = i - count    # 栈向低地址生长，所以是减
             else:
                 if count > greatest_count:
                     greatest_count = count
@@ -119,14 +124,20 @@ class printFormat(angr.procedures.libc.printf.printf):
                 position, greatest_count
             )
         )
-
         if greatest_count > 0:
+            print("position:",position)
+            print("greatest_count:",greatest_count)
+            print("var_data:",var_data)
+            print("var_loc:",hex(var_loc))
             # x86架构格式化字符串
             str_val = b"%lx_"
             # x64架构格式化字符串
             if bits == 64:
                 str_val = b"%llx_"
-            if self.can_constrain_bytes(state,var_data,var_loc, position,var_len,strVal=str_val):
+            # var_len->symbolic_num
+            # 参数更改测试长度应该是symbolic_list True个数
+            # if self.can_constrain_bytes(state,var_data,var_loc, position,var_len,strVal=str_val):
+            if self.can_constrain_bytes(state,var_data,var_loc, position,symbolic_num,strVal=str_val):
                 print("[+] Can constrain bytes")
                 print("[+] Constraining input to leak")
 
@@ -151,7 +162,7 @@ class printFormat(angr.procedures.libc.printf.printf):
                 # print("[+] Vulnerable path found {}".format(vuln_string))
                 user_input = state.globals["user_input"]
 
-                self.state.globals["input"] = solv(user_input, cast_to=bytes)
+                self.state.globals["input"] = state.solver.eval(user_input, cast_to=bytes)
                 self.state.globals["type"] = "Format"
                 self.state.globals["position"] = position
                 self.state.globals["length"] = greatest_count
@@ -170,6 +181,7 @@ class printFormat(angr.procedures.libc.printf.printf):
             # extra_constraints:以元组形式传递约束，该约束会作为判断依据，但不会加载到state(在这里也就是不会修改内存)
             # satisfiable:判断当前约束是否有解
             if not state.solver.satisfiable(extra_constraints=[curr_byte == strVal[strValIndex]]):
+                print("{}:error".format(i))
                 return False
         return True
 
